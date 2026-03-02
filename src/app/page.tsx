@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useRef } from "react";
 import {
   MessageCircle,
   Palette,
@@ -24,6 +23,11 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import XPBar from "@/components/shared/XPBar";
+import StreakBadge from "@/components/shared/StreakBadge";
+import { newArrivals as latestArrivals } from "@/data/new-arrivals";
+import { useAppStore } from "@/stores";
 
 /* ------------------------------------------------------------------ */
 /*  Animation helpers                                                  */
@@ -225,6 +229,11 @@ const testimonials = [
 
 export default function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const loyalty = useAppStore((s) => s.loyalty);
+  const engagement = useAppStore((s) => s.engagement);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const scrollNewArrivals = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;
@@ -719,6 +728,139 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      
+      {/* ============================================================ */}
+      {/*  STICKINESS: LOYALTY, STREAK & NEW ARRIVALS                  */}
+      {/* ============================================================ */}
+      {mounted && (
+        <section className="bg-gradient-to-b from-[#FAFAF7] to-white py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={staggerContainer}
+            >
+              {/* Section header */}
+              <motion.div variants={fadeUp} className="text-center mb-12">
+                <span className="text-sm font-semibold uppercase tracking-widest text-[#D4A843]">
+                  Tu Experiencia
+                </span>
+                <h2 className="mt-3 font-[family-name:var(--font-playfair)] text-3xl font-bold text-[#1A1A1A] sm:text-4xl">
+                  Herramientas Para Ti
+                </h2>
+                <p className="mx-auto mt-4 max-w-xl text-[#5C5C5C]">
+                  Explora nuestras herramientas exclusivas para planificar tus proyectos de costura
+                </p>
+              </motion.div>
+
+              {/* Stats row */}
+              <motion.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <XPBar />
+                </div>
+                <div className="flex items-center gap-3 rounded-xl border border-[#E5E0D5] bg-white p-4 shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
+                    <span className="text-lg">🔥</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#1A1A1A]">{engagement.streak}</p>
+                    <p className="text-xs text-[#5C5C5C]">Días de racha</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 rounded-xl border border-[#E5E0D5] bg-white p-4 shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                    <span className="text-lg">⭐</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#1A1A1A]">{loyalty.totalPointsEarned}</p>
+                    <p className="text-xs text-[#5C5C5C]">Puntos ganados</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 rounded-xl border border-[#E5E0D5] bg-white p-4 shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                    <span className="text-lg">🏆</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#1A1A1A]">{engagement.longestStreak}</p>
+                    <p className="text-xs text-[#5C5C5C]">Mejor racha</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Quick access cards */}
+              <motion.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
+                {[
+                  { href: "/asesor", icon: "💬", title: "Asesor IA", desc: "Consejero experto en telas" },
+                  { href: "/calculadora", icon: "📐", title: "Calculadora", desc: "Calcula cuánta tela necesitas" },
+                  { href: "/proyectos", icon: "📋", title: "Proyectos", desc: "Planifica tus creaciones" },
+                  { href: "/inspiracion", icon: "✨", title: "Inspiración", desc: "Ideas para tus diseños" },
+                ].map((card) => (
+                  <Link
+                    key={card.href}
+                    href={card.href}
+                    className="group rounded-xl border border-[#E5E0D5] bg-white p-5 shadow-sm transition-all hover:border-[#D4A843] hover:shadow-md"
+                  >
+                    <span className="text-2xl">{card.icon}</span>
+                    <h3 className="mt-2 font-[family-name:var(--font-playfair)] text-base font-bold text-[#1A1A1A] group-hover:text-[#1B3A5C]">
+                      {card.title}
+                    </h3>
+                    <p className="mt-0.5 text-xs text-[#5C5C5C]">{card.desc}</p>
+                  </Link>
+                ))}
+              </motion.div>
+
+              {/* Featured New Arrivals */}
+              <motion.div variants={fadeUp}>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="font-[family-name:var(--font-playfair)] text-2xl font-bold text-[#1A1A1A]">
+                      Telas Recién Llegadas
+                    </h3>
+                    <p className="text-sm text-[#5C5C5C]">Las últimas novedades en nuestra tienda</p>
+                  </div>
+                  <Link
+                    href="/novedades"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#C75B39] hover:text-[#D4A843] transition-colors"
+                  >
+                    Ver todas
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {latestArrivals.slice(0, 4).map((arrival) => (
+                    <Link
+                      key={arrival.id}
+                      href="/novedades"
+                      className="group overflow-hidden rounded-xl border border-[#E5E0D5] bg-white shadow-sm transition-shadow hover:shadow-md"
+                    >
+                      <div className="relative aspect-square overflow-hidden">
+                        <Image
+                          src={arrival.image}
+                          alt={arrival.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        />
+                        <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-[#C75B39] px-2 py-0.5 text-[10px] font-bold text-white">
+                          <Sparkles className="h-2.5 w-2.5" />
+                          ¡Nuevo!
+                        </span>
+                      </div>
+                      <div className="p-3">
+                        <h4 className="text-sm font-semibold text-[#1A1A1A] truncate">{arrival.name}</h4>
+                        <p className="text-xs text-[#5C5C5C]">{arrival.type}</p>
+                        <p className="mt-1 text-sm font-bold text-[#1B3A5C]">L. {arrival.pricePerMeter}/m</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* ============================================================ */}
       {/*  7. LOCATION PREVIEW                                         */}

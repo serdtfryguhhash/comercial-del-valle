@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, Phone } from "lucide-react";
+import { usePathname } from "next/navigation";
+import {
+  Menu,
+  Phone,
+  Scissors,
+  Sparkles,
+  BookOpen,
+  Calculator,
+  Star,
+  FolderOpen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -10,17 +20,33 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
+import StreakBadge from "@/components/shared/StreakBadge";
+import { useAppStore } from "@/stores";
+import { POINT_ACTIONS } from "@/lib/gamification";
 
-const navLinks = [
-  { href: "#inicio", label: "Inicio" },
-  { href: "#catalogo", label: "Catalogo" },
-  { href: "#nosotros", label: "Nosotros" },
-  { href: "#contacto", label: "Contacto" },
+const mainNavLinks = [
+  { href: "/catalogo", label: "Catálogo" },
+  { href: "/novedades", label: "Novedades", icon: Star },
+  { href: "/asesor", label: "Asesor IA", icon: Sparkles },
+  { href: "/calculadora", label: "Calculadora", icon: Calculator },
 ];
 
+const moreNavLinks = [
+  { href: "/proyectos", label: "Proyectos", icon: FolderOpen },
+  { href: "/mis-proyectos", label: "Seguimiento", icon: Scissors },
+  { href: "/inspiracion", label: "Inspiración", icon: BookOpen },
+  { href: "/nosotros", label: "Nosotros" },
+  { href: "/contacto", label: "Contacto" },
+];
+
+const allNavLinks = [...mainNavLinks, ...moreNavLinks];
+
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { recordVisit, addPoints, engagement } = useAppStore();
+  const [hasRecorded, setHasRecorded] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +55,18 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Record daily visit
+  useEffect(() => {
+    if (!hasRecorded) {
+      const today = new Date().toISOString().split("T")[0];
+      if (engagement.lastVisit !== today) {
+        recordVisit();
+        addPoints(POINT_ACTIONS.DAILY_VISIT.action, POINT_ACTIONS.DAILY_VISIT.points);
+      }
+      setHasRecorded(true);
+    }
+  }, [hasRecorded, engagement.lastVisit, recordVisit, addPoints]);
 
   return (
     <>
@@ -52,21 +90,53 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-[#1A1A1A]/70 transition-colors hover:text-[#1B3A5C] relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-[#D4A843] after:transition-all hover:after:w-full"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden items-center gap-1 lg:flex">
+            {mainNavLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[#1B3A5C]/10 text-[#1B3A5C]"
+                      : "text-[#1A1A1A]/70 hover:text-[#1B3A5C] hover:bg-[#1B3A5C]/5"
+                  }`}
+                >
+                  {link.icon && <link.icon className="h-3.5 w-3.5" />}
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            {/* More dropdown-like links */}
+            {moreNavLinks.slice(0, 3).map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[#1B3A5C]/10 text-[#1B3A5C]"
+                      : "text-[#1A1A1A]/70 hover:text-[#1B3A5C] hover:bg-[#1B3A5C]/5"
+                  }`}
+                >
+                  {link.icon && <link.icon className="h-3.5 w-3.5" />}
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            <div className="mx-1.5 h-5 w-px bg-[#E5E0D5]" />
+
+            <StreakBadge />
+
             <Button
               asChild
-              className="rounded-full bg-[#1B3A5C] px-6 text-sm font-medium text-white hover:bg-[#244D78] transition-colors"
+              className="ml-2 rounded-full bg-[#1B3A5C] px-5 text-sm font-medium text-white hover:bg-[#244D78] transition-colors"
             >
-              <Link href="#contacto">
+              <Link href="/contacto">
                 <Phone className="mr-1.5 h-4 w-4" />
                 Contáctanos
               </Link>
@@ -74,72 +144,95 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu */}
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" aria-label="Abrir menú">
-                <Menu className="h-6 w-6 text-[#1B3A5C]" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-[#FAFAF7]">
-              <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
-              <div className="flex flex-col gap-2 pt-8">
-                {/* Mobile Logo */}
-                <div className="mb-6 px-2">
-                  <span className="font-[family-name:var(--font-playfair)] text-xl font-bold text-[#1B3A5C]">
-                    Comercial
-                  </span>
-                  <span className="font-[family-name:var(--font-playfair)] text-xl font-light text-[#1B3A5C]">
-                    {" "}del Valle
-                  </span>
-                  <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-[#D4A843]" />
-                </div>
+          <div className="flex items-center gap-2 lg:hidden">
+            <StreakBadge />
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Abrir menú">
+                  <Menu className="h-6 w-6 text-[#1B3A5C]" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72 bg-[#FAFAF7]">
+                <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+                <div className="flex flex-col gap-1 pt-8">
+                  {/* Mobile Logo */}
+                  <div className="mb-6 px-2">
+                    <span className="font-[family-name:var(--font-playfair)] text-xl font-bold text-[#1B3A5C]">
+                      Comercial
+                    </span>
+                    <span className="font-[family-name:var(--font-playfair)] text-xl font-light text-[#1B3A5C]">
+                      {" "}del Valle
+                    </span>
+                    <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-[#D4A843]" />
+                  </div>
 
-                {/* Mobile Nav Links */}
-                {navLinks.map((link) => (
+                  {/* Mobile Nav Links */}
                   <Link
-                    key={link.href}
-                    href={link.href}
+                    href="/"
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-lg px-4 py-3 text-base font-medium text-[#1A1A1A]/80 transition-colors hover:bg-[#1B3A5C]/5 hover:text-[#1B3A5C]"
+                    className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                      pathname === "/"
+                        ? "bg-[#1B3A5C]/10 text-[#1B3A5C]"
+                        : "text-[#1A1A1A]/80 hover:bg-[#1B3A5C]/5 hover:text-[#1B3A5C]"
+                    }`}
                   >
-                    {link.label}
+                    Inicio
                   </Link>
-                ))}
 
-                {/* Mobile CTA */}
-                <div className="mt-4 px-2">
-                  <Button
-                    asChild
-                    className="w-full rounded-full bg-[#1B3A5C] text-sm font-medium text-white hover:bg-[#244D78]"
-                  >
-                    <Link
-                      href="#contacto"
-                      onClick={() => setMobileOpen(false)}
+                  {allNavLinks.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                          isActive
+                            ? "bg-[#1B3A5C]/10 text-[#1B3A5C]"
+                            : "text-[#1A1A1A]/80 hover:bg-[#1B3A5C]/5 hover:text-[#1B3A5C]"
+                        }`}
+                      >
+                        {link.icon && <link.icon className="h-4 w-4" />}
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+
+                  {/* Mobile CTA */}
+                  <div className="mt-4 px-2">
+                    <Button
+                      asChild
+                      className="w-full rounded-full bg-[#1B3A5C] text-sm font-medium text-white hover:bg-[#244D78]"
                     >
-                      <Phone className="mr-1.5 h-4 w-4" />
-                      Contáctanos
-                    </Link>
-                  </Button>
-                </div>
+                      <Link
+                        href="/contacto"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <Phone className="mr-1.5 h-4 w-4" />
+                        Contáctanos
+                      </Link>
+                    </Button>
+                  </div>
 
-                {/* Mobile Contact Info */}
-                <div className="mt-8 border-t border-[#E5E0D5] px-4 pt-6">
-                  <p className="text-xs text-[#5C5C5C]">
-                    Lun - Vie: 8:00 - 17:30
-                  </p>
-                  <p className="text-xs text-[#5C5C5C]">
-                    Sáb: 8:00 - 17:00
-                  </p>
-                  <a
-                    href="tel:+50496518484"
-                    className="mt-2 block text-sm font-medium text-[#1B3A5C]"
-                  >
-                    9651-8484
-                  </a>
+                  {/* Mobile Contact Info */}
+                  <div className="mt-8 border-t border-[#E5E0D5] px-4 pt-6">
+                    <p className="text-xs text-[#5C5C5C]">
+                      Lun - Vie: 8:00 - 17:30
+                    </p>
+                    <p className="text-xs text-[#5C5C5C]">
+                      Sáb: 8:00 - 17:00
+                    </p>
+                    <a
+                      href="tel:+50496518484"
+                      className="mt-2 block text-sm font-medium text-[#1B3A5C]"
+                    >
+                      9651-8484
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </nav>
       </header>
 
