@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useRef } from "react";
 import {
   MessageCircle,
   Palette,
@@ -20,6 +21,8 @@ import {
   Users,
   BadgeDollarSign,
   Gem,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -150,6 +153,51 @@ const features = [
   },
 ];
 
+const newArrivals = [
+  {
+    id: 101,
+    name: "Tela Navide\u00f1a Estampada",
+    price: 135,
+    image:
+      "https://images.unsplash.com/photo-1512389142860-9c449e58a814?w=600&h=600&fit=crop",
+  },
+  {
+    id: 102,
+    name: "Lino Europeo Premium",
+    price: 285,
+    image:
+      "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=600&h=600&fit=crop",
+  },
+  {
+    id: 103,
+    name: "Seda Japonesa",
+    price: 395,
+    image:
+      "https://images.unsplash.com/photo-1550639524-a6f58345a2ca?w=600&h=600&fit=crop",
+  },
+  {
+    id: 104,
+    name: "Algod\u00f3n Org\u00e1nico",
+    price: 165,
+    image:
+      "https://images.unsplash.com/photo-1549989476-69a92fa57c36?w=600&h=600&fit=crop",
+  },
+  {
+    id: 105,
+    name: "Terciopelo Italiano",
+    price: 345,
+    image:
+      "https://images.unsplash.com/photo-1528459584353-5297db1a9c01?w=600&h=600&fit=crop",
+  },
+  {
+    id: 106,
+    name: "Chiffon Tornasol",
+    price: 195,
+    image:
+      "https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=600&h=600&fit=crop",
+  },
+];
+
 const testimonials = [
   {
     name: "María Elena Reyes",
@@ -176,6 +224,17 @@ const testimonials = [
 /* ------------------------------------------------------------------ */
 
 export default function HomePage() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollNewArrivals = (direction: "left" | "right") => {
+    if (!scrollContainerRef.current) return;
+    const scrollAmount = 320;
+    scrollContainerRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <div className="overflow-x-hidden bg-[#FAFAF7] text-[#1A1A1A]">
       {/* ============================================================ */}
@@ -307,6 +366,126 @@ export default function HomePage() {
               );
             })}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  2.5 NEW ARRIVALS ("Recién Llegados")                        */}
+      {/* ============================================================ */}
+      <section className="bg-white py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center"
+          >
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-bold text-[#1B3A5C] sm:text-4xl lg:text-5xl">
+              Reci&eacute;n Llegados
+            </h2>
+            <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-[#D4A843]" />
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-[#1A1A1A]/70">
+              Las &uacute;ltimas telas que acaban de llegar a nuestra tienda
+            </p>
+          </motion.div>
+
+          {/* Scroll controls */}
+          <div className="relative mt-12">
+            {/* Left arrow */}
+            <button
+              onClick={() => scrollNewArrivals("left")}
+              className="absolute -left-2 top-1/2 z-10 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/90 p-2 shadow-lg transition-all hover:bg-white hover:shadow-xl md:flex"
+              aria-label="Desplazar a la izquierda"
+            >
+              <ChevronLeft className="h-6 w-6 text-[#1B3A5C]" />
+            </button>
+
+            {/* Right arrow */}
+            <button
+              onClick={() => scrollNewArrivals("right")}
+              className="absolute -right-2 top-1/2 z-10 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/90 p-2 shadow-lg transition-all hover:bg-white hover:shadow-xl md:flex"
+              aria-label="Desplazar a la derecha"
+            >
+              <ChevronRight className="h-6 w-6 text-[#1B3A5C]" />
+            </button>
+
+            {/* Scrollable row */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={staggerContainer}
+              ref={scrollContainerRef}
+              className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
+            >
+              {newArrivals.map((product) => (
+                <motion.div
+                  key={product.id}
+                  variants={scaleIn}
+                  className="w-[260px] shrink-0 snap-start"
+                >
+                  <div className="group overflow-hidden rounded-2xl bg-[#FAFAF7] shadow-md transition-all hover:shadow-xl">
+                    <div className="relative aspect-square overflow-hidden">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="260px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      {/* NUEVO badge */}
+                      <span className="absolute top-3 left-3 rounded-full bg-[#D4A843] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+                        Nuevo
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-[family-name:var(--font-playfair)] text-base font-bold text-[#1A1A1A] leading-snug">
+                        {product.name}
+                      </h3>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-lg font-bold text-[#1B3A5C]">
+                          L. {product.price}
+                          <span className="text-xs font-normal text-gray-500">
+                            {" "}
+                            /yarda
+                          </span>
+                        </span>
+                        <Link
+                          href="/catalogo"
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#1B3A5C] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#1B3A5C]/90"
+                        >
+                          Ver
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* "Ver Todo" card */}
+              <motion.div
+                variants={scaleIn}
+                className="w-[260px] shrink-0 snap-start"
+              >
+                <Link
+                  href="/catalogo"
+                  className="group flex h-full flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#D4A843]/40 bg-[#D4A843]/5 p-8 transition-all hover:border-[#D4A843] hover:bg-[#D4A843]/10"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D4A843]/20 transition-colors group-hover:bg-[#D4A843]/30">
+                    <ArrowRight className="h-8 w-8 text-[#D4A843]" />
+                  </div>
+                  <span className="mt-4 font-[family-name:var(--font-playfair)] text-lg font-semibold text-[#1B3A5C]">
+                    Ver Todo el Cat&aacute;logo
+                  </span>
+                  <span className="mt-1 text-sm text-[#1A1A1A]/60">
+                    Explora m&aacute;s de 30 telas
+                  </span>
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 

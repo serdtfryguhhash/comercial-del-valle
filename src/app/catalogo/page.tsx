@@ -1,8 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Calculator,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
 
 /* ------------------------------------------------------------------ */
 /*  Types & Data                                                       */
@@ -24,6 +47,11 @@ interface Product {
   description: string;
   price: number;
   image: string;
+}
+
+interface CartItem {
+  product: Product;
+  quantity: number;
 }
 
 const CATEGORIES: Category[] = [
@@ -213,7 +241,7 @@ const products: Product[] = [
   },
   {
     id: 17,
-    name: "Terciopelo Borgoña",
+    name: "Terciopelo Borgo\u00f1a",
     category: "Eventos",
     description:
       "Terciopelo premium de pelo corto, lujoso al tacto para vestidos y decoraci\u00f3n.",
@@ -377,14 +405,379 @@ function WhatsAppIcon({ className = "w-5 h-5" }: { className?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Product Card                                                       */
+/*  Fabric Calculator Component                                        */
 /* ------------------------------------------------------------------ */
 
-function ProductCard({ product }: { product: Product }) {
-  const whatsappUrl = `https://wa.me/50496518484?text=${encodeURIComponent(
-    `Hola, me interesa el producto: ${product.name}`
-  )}`;
+function FabricCalculator({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [largo, setLargo] = useState<string>("");
+  const [ancho, setAncho] = useState<string>("1.50");
+  const [piezas, setPiezas] = useState<string>("1");
+  const [precioPorYarda, setPrecioPorYarda] = useState<string>("150");
 
+  const largoNum = parseFloat(largo) || 0;
+  const anchoNum = parseFloat(ancho) || 1.5;
+  const piezasNum = parseInt(piezas) || 1;
+  const precioNum = parseFloat(precioPorYarda) || 150;
+
+  // Convert meters to yards (1 meter = 1.09361 yards)
+  const totalMetros = largoNum * piezasNum;
+  const totalYardas = totalMetros * 1.09361;
+  const totalEstimado = totalYardas * precioNum;
+
+  const handleWhatsApp = () => {
+    const message = `Hola, necesito una cotizaci\u00f3n:\n\n` +
+      `Calculadora de Telas:\n` +
+      `- Largo deseado: ${largoNum} metros\n` +
+      `- Ancho de tela: ${anchoNum} metros\n` +
+      `- Cantidad de piezas: ${piezasNum}\n` +
+      `- Total de metros: ${totalMetros.toFixed(2)} m\n` +
+      `- Total en yardas: ${totalYardas.toFixed(2)} yardas\n` +
+      `- Precio por yarda: L. ${precioNum.toFixed(2)}\n` +
+      `- Total estimado: L. ${totalEstimado.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n\n` +
+      `Gracias!`;
+
+    window.open(
+      `https://wa.me/50496518484?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-[#FAFAF7] border-none">
+        <DialogHeader className="bg-[#1B3A5C] -m-6 mb-0 p-6 rounded-t-lg">
+          <DialogTitle className="text-white font-[family-name:var(--font-playfair)] text-xl flex items-center gap-2">
+            <Calculator className="h-5 w-5 text-[#D4A843]" />
+            Calculadora de Telas
+          </DialogTitle>
+          <DialogDescription className="text-white/70">
+            Calcula la cantidad de tela que necesitas para tu proyecto
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 pt-2">
+          {/* Largo */}
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
+              Largo deseado (metros)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={largo}
+              onChange={(e) => setLargo(e.target.value)}
+              placeholder="Ej: 2.5"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#D4A843] focus:ring-2 focus:ring-[#D4A843]/20"
+            />
+          </div>
+
+          {/* Ancho */}
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
+              Ancho de la tela (metros)
+            </label>
+            <select
+              value={ancho}
+              onChange={(e) => setAncho(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#D4A843] focus:ring-2 focus:ring-[#D4A843]/20"
+            >
+              <option value="1.0">1.00 m</option>
+              <option value="1.15">1.15 m</option>
+              <option value="1.50">1.50 m</option>
+              <option value="1.80">1.80 m</option>
+            </select>
+          </div>
+
+          {/* Piezas */}
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
+              Cantidad de piezas
+            </label>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={piezas}
+              onChange={(e) => setPiezas(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#D4A843] focus:ring-2 focus:ring-[#D4A843]/20"
+            />
+          </div>
+
+          {/* Precio por yarda */}
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
+              Precio por yarda (L.)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={precioPorYarda}
+              onChange={(e) => setPrecioPorYarda(e.target.value)}
+              placeholder="150"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#D4A843] focus:ring-2 focus:ring-[#D4A843]/20"
+            />
+          </div>
+
+          {/* Results */}
+          {largoNum > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-lg bg-[#1B3A5C]/5 border border-[#1B3A5C]/10 p-4 space-y-2"
+            >
+              <div className="flex justify-between text-sm">
+                <span className="text-[#1A1A1A]/70">Total de metros:</span>
+                <span className="font-semibold text-[#1B3A5C]">
+                  {totalMetros.toFixed(2)} m
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#1A1A1A]/70">Total en yardas:</span>
+                <span className="font-semibold text-[#1B3A5C]">
+                  {totalYardas.toFixed(2)} yardas
+                </span>
+              </div>
+              <div className="border-t border-[#1B3A5C]/10 pt-2 flex justify-between">
+                <span className="font-medium text-[#1A1A1A]">
+                  Total estimado:
+                </span>
+                <span className="text-xl font-bold text-[#D4A843]">
+                  L.{" "}
+                  {totalEstimado.toLocaleString("es-HN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </motion.div>
+          )}
+
+          {/* WhatsApp button */}
+          <button
+            onClick={handleWhatsApp}
+            disabled={largoNum <= 0}
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1DA851] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <WhatsAppIcon className="h-5 w-5" />
+            Enviar Cotizaci&oacute;n por WhatsApp
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Cart Sheet Component                                               */
+/* ------------------------------------------------------------------ */
+
+function CartSheet({
+  open,
+  onOpenChange,
+  cart,
+  onUpdateQuantity,
+  onRemoveItem,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  cart: CartItem[];
+  onUpdateQuantity: (productId: number, quantity: number) => void;
+  onRemoveItem: (productId: number) => void;
+}) {
+  const total = cart.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  const handleWhatsApp = () => {
+    if (cart.length === 0) return;
+
+    let message = "Hola, me gustar\u00eda cotizar los siguientes productos:\n\n";
+    cart.forEach((item, index) => {
+      message += `${index + 1}. ${item.product.name} - Cantidad: ${item.quantity} yardas\n`;
+    });
+    message += `\nTotal estimado: L. ${total.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    message += "\n\nGracias!";
+
+    window.open(
+      `https://wa.me/50496518484?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="flex flex-col bg-[#FAFAF7] w-full sm:max-w-md"
+      >
+        <SheetHeader className="border-b border-gray-200 pb-4">
+          <SheetTitle className="font-[family-name:var(--font-playfair)] text-xl text-[#1B3A5C] flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-[#D4A843]" />
+            Mi Pedido
+          </SheetTitle>
+          <SheetDescription className="text-[#1A1A1A]/60">
+            {cart.length === 0
+              ? "Tu carrito est\u00e1 vac\u00edo"
+              : `${cart.length} ${cart.length === 1 ? "producto" : "productos"} en tu pedido`}
+          </SheetDescription>
+        </SheetHeader>
+
+        {/* Cart items */}
+        <div className="flex-1 overflow-y-auto py-4 px-1">
+          {cart.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-12">
+              <ShoppingCart className="h-16 w-16 text-gray-300 mb-4" />
+              <p className="text-[#1A1A1A]/50 text-sm">
+                Agrega productos desde el cat&aacute;logo para crear tu pedido
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <AnimatePresence mode="popLayout">
+                {cart.map((item) => (
+                  <motion.div
+                    key={item.product.id}
+                    layout
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex gap-3 rounded-lg bg-white p-3 shadow-sm"
+                  >
+                    {/* Product image */}
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
+                      <Image
+                        src={item.product.image}
+                        alt={item.product.name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    </div>
+
+                    {/* Product info */}
+                    <div className="flex flex-1 flex-col min-w-0">
+                      <h4 className="text-sm font-semibold text-[#1A1A1A] truncate">
+                        {item.product.name}
+                      </h4>
+                      <p className="text-xs text-[#1A1A1A]/60">
+                        L. {item.product.price}/yarda
+                      </p>
+
+                      {/* Quantity controls */}
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            onUpdateQuantity(
+                              item.product.id,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[#1A1A1A] transition-colors hover:bg-gray-200"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            onUpdateQuantity(
+                              item.product.id,
+                              Math.max(1, parseInt(e.target.value) || 1)
+                            )
+                          }
+                          className="w-12 rounded border border-gray-200 px-1 py-0.5 text-center text-xs text-[#1A1A1A] outline-none focus:border-[#D4A843]"
+                        />
+                        <button
+                          onClick={() =>
+                            onUpdateQuantity(item.product.id, item.quantity + 1)
+                          }
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[#1A1A1A] transition-colors hover:bg-gray-200"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                        <span className="text-xs text-[#1A1A1A]/50 ml-0.5">
+                          yardas
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Price and remove */}
+                    <div className="flex flex-col items-end justify-between">
+                      <button
+                        onClick={() => onRemoveItem(item.product.id)}
+                        className="flex h-6 w-6 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="text-sm font-bold text-[#1B3A5C]">
+                        L.{" "}
+                        {(item.product.price * item.quantity).toLocaleString(
+                          "es-HN"
+                        )}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+
+        {/* Footer with total and WhatsApp button */}
+        {cart.length > 0 && (
+          <SheetFooter className="border-t border-gray-200 pt-4">
+            <div className="w-full space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-base font-medium text-[#1A1A1A]">
+                  Total estimado:
+                </span>
+                <span className="text-2xl font-bold text-[#D4A843]">
+                  L.{" "}
+                  {total.toLocaleString("es-HN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <button
+                onClick={handleWhatsApp}
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3.5 text-base font-semibold text-white transition-colors hover:bg-[#1DA851]"
+              >
+                <WhatsAppIcon className="h-5 w-5" />
+                Enviar Pedido por WhatsApp
+              </button>
+            </div>
+          </SheetFooter>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Product Card (with cart)                                           */
+/* ------------------------------------------------------------------ */
+
+function ProductCard({
+  product,
+  onAddToCart,
+  isInCart,
+}: {
+  product: Product;
+  onAddToCart: (product: Product) => void;
+  isInCart: boolean;
+}) {
   return (
     <motion.div
       layout
@@ -429,15 +822,26 @@ function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
 
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1DA851]"
+        <button
+          onClick={() => onAddToCart(product)}
+          className={`mt-2 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
+            isInCart
+              ? "bg-[#1B3A5C] text-white hover:bg-[#1B3A5C]/90"
+              : "bg-[#D4A843] text-white hover:bg-[#c49a38]"
+          }`}
         >
-          <WhatsAppIcon className="h-4 w-4" />
-          Consultar
-        </a>
+          {isInCart ? (
+            <>
+              <ShoppingCart className="h-4 w-4" />
+              Agregado
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Agregar
+            </>
+          )}
+        </button>
       </div>
     </motion.div>
   );
@@ -449,15 +853,47 @@ function ProductCard({ product }: { product: Product }) {
 
 export default function CatalogoPage() {
   const [activeCategory, setActiveCategory] = useState<Category>("Todos");
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
 
   const filtered =
     activeCategory === "Todos"
       ? products
       : products.filter((p) => p.category === activeCategory);
 
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const addToCart = (product: Product) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        // Already in cart, open the cart to show it
+        setCartOpen(true);
+        return prev;
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+  };
+
+  const updateQuantity = (productId: number, quantity: number) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.product.id === productId ? { ...item, quantity } : item
+      )
+    );
+  };
+
+  const removeItem = (productId: number) => {
+    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  };
+
+  const isInCart = (productId: number) =>
+    cart.some((item) => item.product.id === productId);
+
   return (
     <main className="min-h-screen bg-[#FAFAF7]">
-      {/* ── Hero ── */}
+      {/* -- Hero -- */}
       <section className="relative flex items-center justify-center overflow-hidden bg-[#1B3A5C] py-24 md:py-32">
         {/* Background image */}
         <Image
@@ -491,7 +927,7 @@ export default function CatalogoPage() {
         </div>
       </section>
 
-      {/* ── Filter Bar ── */}
+      {/* -- Filter Bar -- */}
       <section className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-6 py-4 scrollbar-hide">
           {CATEGORIES.map((cat) => (
@@ -510,7 +946,7 @@ export default function CatalogoPage() {
         </div>
       </section>
 
-      {/* ── Product Grid ── */}
+      {/* -- Product Grid -- */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <motion.p
           key={activeCategory}
@@ -519,7 +955,9 @@ export default function CatalogoPage() {
           className="mb-8 text-sm text-gray-500"
         >
           Mostrando{" "}
-          <span className="font-semibold text-[#1A1A1A]">{filtered.length}</span>{" "}
+          <span className="font-semibold text-[#1A1A1A]">
+            {filtered.length}
+          </span>{" "}
           {filtered.length === 1 ? "producto" : "productos"}
           {activeCategory !== "Todos" && (
             <>
@@ -538,13 +976,18 @@ export default function CatalogoPage() {
             className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4"
           >
             {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+                isInCart={isInCart(product.id)}
+              />
             ))}
           </motion.div>
         </AnimatePresence>
       </section>
 
-      {/* ── CTA ── */}
+      {/* -- CTA -- */}
       <section className="bg-[#1B3A5C] py-16">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-bold text-white md:text-4xl">
@@ -565,6 +1008,78 @@ export default function CatalogoPage() {
           </a>
         </div>
       </section>
+
+      {/* ================================================================ */}
+      {/*  Floating Buttons (bottom-right)                                 */}
+      {/* ================================================================ */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {/* Calculator button */}
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+          onClick={() => setCalcOpen(true)}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1B3A5C] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl"
+          aria-label="Calculadora de Telas"
+          title="Calculadora de Telas"
+        >
+          <Calculator className="h-6 w-6" />
+        </motion.button>
+
+        {/* Cart button */}
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
+          onClick={() => setCartOpen(true)}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#D4A843] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl"
+          aria-label="Ver carrito"
+          title="Ver carrito"
+        >
+          <ShoppingCart className="h-6 w-6" />
+          {/* Badge */}
+          <AnimatePresence>
+            {cartCount > 0 && (
+              <motion.span
+                key={cartCount}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#C75B39] text-xs font-bold text-white ring-2 ring-white"
+              >
+                {cartCount > 99 ? "99+" : cartCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
+        {/* WhatsApp button */}
+        <motion.a
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.7, type: "spring", stiffness: 200 }}
+          href="https://wa.me/50496518484"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl"
+          aria-label="WhatsApp"
+          title="Cont&aacute;ctanos por WhatsApp"
+        >
+          <WhatsAppIcon className="h-7 w-7" />
+        </motion.a>
+      </div>
+
+      {/* Fabric Calculator Dialog */}
+      <FabricCalculator open={calcOpen} onOpenChange={setCalcOpen} />
+
+      {/* Cart Sheet */}
+      <CartSheet
+        open={cartOpen}
+        onOpenChange={setCartOpen}
+        cart={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeItem}
+      />
     </main>
   );
 }
