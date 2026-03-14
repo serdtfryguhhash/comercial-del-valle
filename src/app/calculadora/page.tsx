@@ -348,7 +348,7 @@ export default function CalculadoraPage() {
                 <SelectContent>
                   {Object.entries(GARMENT_CONFIGS).map(([key, cfg]) => (
                     <SelectItem key={key} value={key}>
-                      {cfg.label} — {cfg.description}
+                      {cfg.label} - {cfg.description}
                     </SelectItem>
                   ))}
                 </SelectContent>

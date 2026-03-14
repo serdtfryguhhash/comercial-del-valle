@@ -918,13 +918,13 @@ export default function HomePage() {
                       <span className="font-medium text-[#1A1A1A]">
                         Lunes a Viernes:
                       </span>{" "}
-                      8:00 AM – 5:00 PM
+                      8:00 AM - 5:00 PM
                     </p>
                     <p>
                       <span className="font-medium text-[#1A1A1A]">
                         Sábado:
                       </span>{" "}
-                      8:00 AM – 12:00 PM
+                      8:00 AM - 12:00 PM
                     </p>
                     <p>
                       <span className="font-medium text-[#1A1A1A]">

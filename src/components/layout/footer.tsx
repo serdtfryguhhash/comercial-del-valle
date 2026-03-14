@@ -2,10 +2,10 @@ import Link from "next/link";
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 
 const footerLinks = [
-  { href: "#catalogo", label: "Catalogo" },
-  { href: "#nosotros", label: "Nosotros" },
-  { href: "#contacto", label: "Contacto" },
-  { href: "#faq", label: "Preguntas Frecuentes" },
+  { href: "/catalogo", label: "Catálogo" },
+  { href: "/nosotros", label: "Nosotros" },
+  { href: "/contacto", label: "Contacto" },
+  { href: "/novedades", label: "Novedades" },
 ];
 
 export default function Footer() {

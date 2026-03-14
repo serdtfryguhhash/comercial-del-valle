@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  New Arrivals Data — 20+ fabric entries                             */
+/*  New Arrivals Data - 20+ fabric entries                             */
 /* ------------------------------------------------------------------ */
 
 export interface NewArrival {

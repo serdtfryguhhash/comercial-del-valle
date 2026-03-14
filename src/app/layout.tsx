@@ -17,7 +17,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Comercial del Valle — Tu Tienda de Telas en San Pedro Sula",
+  title: "Comercial del Valle - Tu Tienda de Telas en San Pedro Sula",
   description:
     "Amplia variedad de telas estampadas, tropicales, florales, impermeables y de moda. Visítanos en Barrio El Benque, San Pedro Sula, Honduras.",
   keywords: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     "Comercial del Valle",
   ],
   openGraph: {
-    title: "Comercial del Valle — Tu Tienda de Telas en San Pedro Sula",
+    title: "Comercial del Valle - Tu Tienda de Telas en San Pedro Sula",
     description:
       "Amplia variedad de telas estampadas, tropicales, florales, impermeables y de moda. Visítanos en Barrio El Benque, San Pedro Sula, Honduras.",
     locale: "es_HN",

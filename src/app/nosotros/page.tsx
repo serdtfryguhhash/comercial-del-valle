@@ -230,9 +230,9 @@ export default function NosotrosPage() {
               Con el paso de los a&ntilde;os, Comercial del Valle ha crecido hasta
               convertirse en una de las tiendas de telas m&aacute;s confiables y
               reconocidas de la regi&oacute;n. Nuestro cat&aacute;logo se ha expandido para
-              incluir m&aacute;s de 500 tipos de telas &mdash; desde algodones y linos
-              cl&aacute;sicos hasta materiales t&eacute;cnicos deportivos e impermeables
-              &mdash; siempre manteniendo el compromiso con la calidad que nos
+              incluir m&aacute;s de 500 tipos de telas, desde algodones y linos
+              cl&aacute;sicos hasta materiales t&eacute;cnicos deportivos e impermeables,
+              siempre manteniendo el compromiso con la calidad que nos
               distingue.
             </p>
             <p className="mt-4 leading-relaxed text-gray-600">
